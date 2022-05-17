@@ -1,8 +1,11 @@
 
-*Author: Andreas Höhn
-*Version: 1.0
-*Date:  2022-05-17
-*About: The Readme file for MSM_Working_LifeExpectancy
+**Author:** Andreas Höhn
+
+**Version:** 1.0
+
+**Date:**  2022-05-17
+
+**About:** The Readme file for MSM_Working_LifeExpectancy
 Estimating Working Life Expectancy from a Parametric Multistate Model using "flexsurv"
 
 # How do I run the code? 
