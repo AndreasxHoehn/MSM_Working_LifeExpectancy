@@ -1,3 +1,4 @@
+# Meta
 
 **Author:** Andreas Höhn
 
@@ -22,7 +23,7 @@ output will be created in the output folder.
 Nope, all file paths are defined relative, just ensure the file structure 
 provided in the example is reproduced 
 
-# Do I need to install packages manually? #
+# Do I need to install packages manually?
 Nope, the program will check automatically for all required libraries and load 
 them If requiered (and only if required), it will download and install missing 
 libraries. Therefore, running code for the very first time might take a bit longer. 
@@ -30,5 +31,5 @@ All subsequent runs wont require this and all will happen much faster. However,
 it is a good idea to install/update the following packages manually: "rmarkdown", 
 "rcpp".
 
-# How do I report bugs? #
+# How do I report bugs?
 send an email to: hoehn@riseup.net 
