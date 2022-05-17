@@ -1,0 +1,219 @@
+---
+title: "Minimum Working Example: Estimation of State-Adjusted Life Expectancy (Here: Working Life Expectancy)"
+author: "Author: Andreas Höhn"
+date: "Date: 2022-05-09"
+---
+
+# Overview of Study Cohort
+
+Based on a underlying simulated population register 
+(N = `r definitions$register_size`), we identified as all individuals aged 
+`r definitions$age_center` and older, who were alive and residing in our 
+population between `r definitions$study_start` and `r definitions$study_end`. 
+All individuals were required to have a minimum length of observability of about 
+`r definitions$min_obs` days. This criteria is optional, shorter and longer 
+duration are possible. The final size of our study population was N = 
+`r length(unique(cohort_long$id))` individuals. For all estimations presented 
+in this example, we require a long-format data set. In this example, we utilized 
+a split into `r definitions$episode_length` days. This setup allows to 
+incorporate time-updated covariates and changes in states. Figure 1 provides a 
+basic overview of our study cohort.
+
+For further information on the underlying simulation [i.e. simulation of life 
+lengths, simulation of employment trajectories], please see the R Code. All 
+relevant parameters for the simulations are stored in the main control file. 
+
+
+```{r fig.pos = "H", echo = FALSE, warning = FALSE, out.width = "80%"} 
+include_graphics(here::here("plots","overview_cohort.png"))
+```
+
+Figure 1: Overview of Study Cohort.
+
+In order to derive state expectancy estimates later on, we need to derive 
+a distribution of start states. This start state distribution represent the 
+distribution of states at the start of the process in our study cohort. In our 
+case it directly corresponds to the distribution of states between the ages of 
+`r definitions$age_center` and `r definitions$age_dist_limit`. It is equivalent 
+to the prevalence of states at the point in time individuals at these ages enter 
+the study. Table 1 provides an overview of our start state distribution. 
+
+Table 1: Distribution of start states (state 1 = active, state 2 = inactive).
+
+```{r echo = FALSE, results = "asis"} 
+knitr::kable(start_states, align = "l")
+```
+
+# State Space and Allowed Transitions
+
+Our multistate approach in this study was conceptualized to capture the number 
+of years lived with respect to labor market activity. Similar study designs have 
+previously been used in studies of multimorbidity and working life expectancy 
+[i.e.: Dudel et al. 2017, Chan et al. 2019]. For our study population, we 
+constructed a history of transitions between three mutually exclusive states. 
+Within the follow-up period, we then captured for every individual whether there 
+was a transition between being active and inactive, or whether the individual 
+has died. 
+
+The state space included the two transient states 'active' (state 1) and 
+'inactive' (state 2), and one absorbing state 'death' (state 3). Based on their 
+activity status, individuals started either in the state 1 or state 2. 
+Individuals were allowed to remain in the current state or transition into any 
+other state. Transitions from being inactive to being active were allowed. 
+However, transitions out of the absorbing state death were not allowed. Table 
+2 illustrates the state space and all allowed transitions. 
+
+Table 2: Allowed transitions.
+
+```{r echo = FALSE, results = "asis"} 
+knitr::kable(table_transitions_allowed, align = "l")
+```
+
+We used a continuous time Markovian multistate approach and modeled four 
+transitions between the three states. For model estimation, we had to modify 
+the data as follows. We captured the time of transitions using age as a time 
+scale. We set age `r definitions$age_center` to be time point 0. All models 
+were estimated separately for each transition to ensure the best possible fit. 
+Table 3 provides a descriptive overview of allowed transitions for men and 
+women.
+
+Table 3: Allowed transitions - descriptive overview.
+
+```{r echo = FALSE, results = "asis"} 
+knitr::kable(table_transitions_descriptive, align = "l")
+```
+
+# Modelling Results
+
+Table 4 provides an overview of all transition-specific models. Are models were 
+estimated based on a Gompertz distribution, which allows us to interpret the 
+covariate effect as a Hazard Ration (HR). Apart from a rate and a shape parameter 
+which are generic to the Gompertz distribution, there was only one further 
+covariate: "Sex". Figure 2 illustrates the corresponding model fit.
+
+Table 4: Overview of Transition-Specific Models.
+
+```{r echo = FALSE, results = "asis"} 
+knitr::kable(model_table, align = "l")
+```
+
+
+```{r fig.pos = "H", echo = FALSE, warning = FALSE, out.width = "80%"} 
+include_graphics(here::here("plots","overview_model_fit.png"))
+```
+
+Figure 2: Overview of Model Fit.
+
+
+# Start-State-Specific Probabilities of State Occupancy 
+
+In a multistate survival model, total LE equals the sum of all state specific 
+LEs, not considering years spent in the absorbing state death. In a multistate 
+framework, state-specific LEs are independent of the start state and quantify 
+the expected time spent in a state by a member of this population. This accounts 
+for the fact that not all members of our population start in the same state and 
+that all members of the population can spent a particular amount of time in 
+different states.In this study, we focused on total and state-specific LE at 
+`r definitions$age_center` years of age and assumed age `r definitions$age_max` 
+to be the maximum life span of individuals. We followed standard methodology 
+to derive LE estimates from a multistate survival model 
+[i.e.: van den Hout et al, 2019]
+
+In a first step, we predicted start-state-specific probabilities of state 
+occupancy. These were predicted over age and for all unique combinations of 
+covariates. From these probabilities we then estimated start-state-specific LE. 
+For this purpose, we defined `r definitions$age_max` to be the upper limit of 
+any life span summed up the respective probabilities over age. Figure 3 gives 
+an example for these start-state specific probabilities of state occupancy,
+referring to a start state "active" at age `r definitions$age_center`.
+
+```{r fig.pos = "H", echo = FALSE, warning = FALSE, out.width = "80%"} 
+include_graphics(here::here("plots","plot_prob_sex.png"))
+```
+
+Figure 3: Start-state specific probabilities of state occupancy. Start state = active.
+
+A different way of visualization is given in Figure 4. This visualization shows 
+stacked survival curves and were directly derived from the start-state specific 
+probabilities of state occupancy presented in Figure 3.
+
+```{r fig.pos = "H", echo = FALSE, warning = FALSE, out.width = "80%"} 
+include_graphics(here::here("plots","plot_stacked_sex.png"))
+```
+
+Figure 4: Stacked survival curves. Start state = active.
+
+We then weighted all start-state-specific LE estimates with the distribution of 
+states at age 30 [see Table 1]. LE at age 30 was then calculated as LE(30) = 
+Σ j LE(30,j) * wj(30-34). LE(30,j) represents the start-state specific LE of 
+state j and wj(30-34) denotes the weight of state j.
+
+In a last step, we obtained 95% confidence intervals (95% CI) for all total and 
+state-specific LE estimates using bootstrapping. For this purpose, we repeated 
+the following steps `r definitions$bootstraps` times. First, we drew a random 
+sample from our study population, which was of the same size as our study 
+population using sampling with replacement. We then re-ran all analyses which 
+were required to estimate total and state-specific LEs. Third, we calculated 
+standard errors for the `r definitions$bootstraps` total and state-specific LEs
+which we used to calculate 95% CIs.
+
+# State Expectancy Estimates 
+
+Final state expectancy estimates are presented in Figure 5. 
+
+
+```{r fig.pos = "H", echo = FALSE, warning = FALSE, out.width = "80%"} 
+include_graphics(here::here("plots","plot_msm_results.png"))
+```
+
+Figure 5: State-expectancy estimates with 95% Confidence Intervals.
+
+
+Data preparation and data analysis were carried out with "R" (Version 4.1.2). It 
+is recommended to use the R package "data.table" for data preparation in order to 
+ensure the best computational performance (Dowle et al 2019). We used the 
+R-package "flexsurv" to estimate parametric Markov multistate survival models 
+and to predict start-state-specific probabilities of state occupancy (Jackson 2016).
+
+# Sensitivity Analysis
+
+In a sensitivity analysis we validated all LE estimates derived from our 
+multistate models with two alternative approaches for estimating LE. We compared 
+the multistate model estimates for LE with LE estimates obtained using a life 
+table approach (Chiang 1984) and a parametric two-state Gompertz survival model. 
+This sensitivity analysis is the best-practice approach for validating the 
+reliability of LE estimates obtained from multistate survival models. We 
+observed a small but expected deviation. However, all estimates were generally 
+close. 
+
+## Women
+
+* multistate parametric gompertz: `r sprintf("%.1f",round(result_msm$LE[1], definitions$rounding_results))`
+* 2-state parametric gompertz: `r sprintf("%.1f",round(result_parsurv_females[1,1], definitions$rounding_results))`
+* Chiang 1984 LTB: `r sprintf("%.1f",round(result_chiang_females$ex[1], definitions$rounding_results))`
+
+# Men:
+* multistate parametric gompertz: `r sprintf("%.1f",round(result_msm$LE[4], definitions$rounding_results))`
+* 2-state parametric gompertz: `r sprintf("%.1f",round(result_parsurv_males[1,1], definitions$rounding_results))`
+* Chiang 1984 LTB: `r sprintf("%.1f",round(result_chiang_males$ex[1], definitions$rounding_results))`
+
+# Discussion
+State-adjusted LE estimates allow us to derive intuitite and powerful 
+indicators for population-subgroups. The underlying multistate model framework -
+with the transitions being expressed via parametric gompertz models - provide 
+a useful tool to study differences in transitions between population subgroups. 
+
+
+# Key References 
+
+Chan, M. S., van den Hout, A., Pujades-Rodriguez, M., Jones, M. M., Matthews, F. E., Jagger, C., & Bajekal, M. (2019). Socio-economic inequalities in life expectancy of older adults with and without multimorbidity: a record linkage study of 1.1 million people in England. International journal of epidemiology, 48(4), 1340-1351.
+
+Chiang, C. L. (1984). Life table and its applications. In Life table and its applications (pp. 316-316).
+
+Dudel, C., & Myrskylä, M. (2017). Working life expectancy at age 50 in the United States and the impact of the Great Recession. Demography, 54(6), 2101-2123.
+
+Dowle, M., Srinivasan, A., Gorecki, J., Chirico, M., Stetsenko, P., Short, T., & Tan, X. (2019). Package ‘data. table’. Extension of ‘data. frame.
+
+Jackson, C. H. (2016). flexsurv: a platform for parametric survival modeling in R. Journal of statistical software, 70.
+
+van den Hout, A., Chan, M. S., & Matthews, F. (2019). Estimation of life expectancies using continuous-time multi-state models. Computer methods and programs in biomedicine, 178, 11-18.
