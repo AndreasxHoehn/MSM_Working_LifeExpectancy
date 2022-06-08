@@ -1,4 +1,4 @@
-librar### Meta ###
+### Meta ###
 
 # Author: Andreas Höhn
 # Version: 1.0
