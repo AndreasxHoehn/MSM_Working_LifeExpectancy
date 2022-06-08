@@ -16,7 +16,7 @@
 .EnsurePackages <- function(packages_vector) {
   new_package <- packages_vector[!(packages_vector %in% 
                                      installed.packages()[, "Package"])]
-  if (length(new_package) == TRUE) {
+  if (length(new_package) != 0) {
     install.packages(new_package, dependencies = TRUE) }
   sapply(packages_vector, suppressPackageStartupMessages(require),
          character.only = TRUE)
